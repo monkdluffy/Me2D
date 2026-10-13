@@ -65,8 +65,7 @@ def build_application():
         "--hidden-import", "pypdf",
         "--hidden-import", "pandas",
         "--hidden-import", "openpyxl",
-        "--hidden-import", "core.updater",
-        "--pyinstaller-build-args", "--noupx"
+        "--hidden-import", "core.updater"
     ]
 
     if is_win:
