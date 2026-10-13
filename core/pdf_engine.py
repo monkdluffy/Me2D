@@ -5,7 +5,14 @@ import subprocess
 import logging
 import tempfile
 from typing import List, Tuple, Optional
-import fitz  # PyMuPDF
+
+# Lazy load fitz (PyMuPDF) so application startup is instant
+class _LazyFitz:
+    def __getattr__(self, name):
+        import fitz
+        return getattr(fitz, name)
+
+fitz = _LazyFitz()
 
 from config import find_libreoffice_path
 

@@ -1,6 +1,6 @@
 [Setup]
 AppName=Canido Doc Manager
-AppVersion=1.0
+AppVersion=1.0.0
 AppPublisher=Canido
 DefaultDirName={autopf}\Canido Doc Manager
 DefaultGroupName=Canido Doc Manager
@@ -9,13 +9,17 @@ Compression=lzma2
 SolidCompression=yes
 OutputDir=dist_installer
 SetupIconFile=assets\logo.ico
+PrivilegesRequiredOverridesAllowed=dialog
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+[Dirs]
+Name: "{app}"; Permissions: users-modify
+
 [Files]
-; Main Executable
-Source: "dist\Canido Doc Manager.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Main Application & Dependencies (onedir mode - instant launch)
+Source: "dist\Canido Doc Manager\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Master Folders
 Source: "Master SMAP\*"; DestDir: "{app}\Master SMAP"; Flags: ignoreversion recursesubdirs createallsubdirs

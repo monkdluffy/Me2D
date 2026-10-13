@@ -42,7 +42,14 @@ class SMAPAutoDocApp:
         # Window icon requires absolute path for Flet desktop runner
         def get_asset_path(filename):
             if hasattr(sys, "_MEIPASS"):
-                return os.path.join(sys._MEIPASS, "assets", filename)
+                p1 = os.path.join(sys._MEIPASS, "assets", filename)
+                if os.path.exists(p1):
+                    return p1
+            if getattr(sys, "frozen", False):
+                exe_dir = os.path.dirname(sys.executable)
+                p2 = os.path.join(exe_dir, "assets", filename)
+                if os.path.exists(p2):
+                    return p2
             return os.path.abspath(os.path.join("assets", filename))
             
         if os.path.exists(get_asset_path("title_logo.ico")):

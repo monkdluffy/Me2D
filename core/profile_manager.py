@@ -2,7 +2,6 @@ import os
 import json
 import logging
 from typing import Dict, List, Any, Tuple, Optional
-import pandas as pd
 
 from config import DEFAULT_VARIABLE_VALUES, ALL_SMAP_VARIABLES, IMAGE_SLOTS
 
@@ -92,6 +91,7 @@ class ProfileManager:
             excel_path: Destination .xlsx file path.
         """
         try:
+            import pandas as pd
             os.makedirs(os.path.dirname(os.path.abspath(excel_path)), exist_ok=True)
             df = pd.DataFrame(data_list)
             
@@ -182,6 +182,7 @@ class ProfileManager:
             return False, [], f"Excel file not found: {excel_path}"
 
         try:
+            import pandas as pd
             df = pd.read_excel(excel_path, engine="openpyxl", dtype=str)
             df = df.fillna("")  # Replace NaN with empty string
             
