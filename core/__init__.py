@@ -10,5 +10,14 @@ from .doc_engine import DocumentEngine
 from .pdf_engine import PDFEngine
 from .profile_manager import ProfileManager
 from .batch_worker import BatchProcessor
+from .updater import check_for_updates, download_update_file, launch_installer_and_exit
 
-__all__ = ["DocumentEngine", "PDFEngine", "ProfileManager", "BatchProcessor"]
+__all__ = [
+    "DocumentEngine",
+    "PDFEngine",
+    "ProfileManager",
+    "BatchProcessor",
+    "check_for_updates",
+    "download_update_file",
+    "launch_installer_and_exit",
+]

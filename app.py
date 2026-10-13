@@ -17,6 +17,7 @@ from core.image_engine import ImageEngine
 from core.profile_manager import ProfileManager
 from core.db_manager import DatabaseManager
 from core.batch_worker import BatchProcessor
+from core.updater import check_for_updates, download_update_file, launch_installer_and_exit
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -225,6 +226,15 @@ class SMAPAutoDocApp:
             bgcolor=ft.Colors.BLUE_50
         )
 
+        # Auto-Updater Controls & State
+        self.txt_update_status = ft.Text(f"Versi saat ini: v{APP_VERSION} (Up-to-date)", size=13, color=ft.Colors.GREY_700)
+        self.btn_check_update = ft.ElevatedButton(
+            "Periksa Pembaruan Sekarang",
+            icon=ft.Icons.REFRESH,
+            style=ft.ButtonStyle(bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE),
+            on_click=self.on_manual_check_update_clicked
+        )
+
         # Build View Containers
         self.input_data_view = self.build_input_data_view()
         self.batch_view = self.build_batch_view()
@@ -233,6 +243,7 @@ class SMAPAutoDocApp:
         self.pdf_toolkit_view = self.build_pdf_toolkit_view()
         self.image_toolkit_view = self.build_image_toolkit_view()
         self.settings_view = self.build_settings_view()
+        self.help_view = self.build_help_view()
         
         # Build SMAP Automation View (Tabs)
         self.smap_tab_bar = ft.TabBar(
@@ -277,17 +288,6 @@ class SMAPAutoDocApp:
             alignment=ft.alignment.Alignment(0, 0)
         )
 
-        # Build Help Placeholder
-        self.help_view = ft.Container(
-            content=ft.Column([
-                ft.Icon(ft.Icons.HELP_OUTLINE, size=80, color=ft.Colors.BLUE_500),
-                ft.Text("Help Center", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_900),
-                ft.Text("Dokumentasi dan petunjuk penggunaan aplikasi akan tersedia di sini.", size=16, color=ft.Colors.GREY_700)
-            ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=20),
-            expand=True,
-            alignment=ft.alignment.Alignment(0, 0)
-        )
-
         # View Switcher Container
         self.content_area = ft.Container(
             content=self.smap_automation_view,
@@ -304,6 +304,9 @@ class SMAPAutoDocApp:
                 self.content_area
             ], expand=True, spacing=0)
         )
+
+        # Check for auto updates asynchronously on startup
+        threading.Thread(target=self._check_update_on_startup, daemon=True).start()
 
     def on_nav_change(self, e):
         idx = e.control.selected_index
@@ -2185,13 +2188,258 @@ class SMAPAutoDocApp:
             )
         )
 
+        card_updater = ft.Card(
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.Icon(ft.Icons.SYSTEM_UPDATE_ALT, color=ft.Colors.BLUE_800, size=24),
+                        ft.Text("Pembaruan Aplikasi (Auto-Updater)", weight=ft.FontWeight.BOLD, size=15, color=ft.Colors.BLUE_900),
+                    ]),
+                    ft.Text(
+                        f"Versi saat ini: v{APP_VERSION} | Repository GitHub: monkdluffy/Me2D",
+                        size=12,
+                        color=ft.Colors.GREY_700
+                    ),
+                    ft.Row([
+                        self.btn_check_update,
+                        self.txt_update_status
+                    ], spacing=15, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+                ], spacing=10),
+                padding=15
+            )
+        )
+
         return ft.Column([
             ft.Text("Application Settings & Configuration", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_900),
             card_general,
             card_company,
             card_lo,
-            card_api
+            card_api,
+            card_updater
         ], spacing=15)
+
+    def build_help_view(self) -> ft.Control:
+        card_help_updater = ft.Card(
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.Icon(ft.Icons.SYSTEM_UPDATE_ALT, color=ft.Colors.BLUE_800, size=24),
+                        ft.Text("Status Pembaruan Sistem (Auto-Updater)", weight=ft.FontWeight.BOLD, size=15, color=ft.Colors.BLUE_900),
+                    ]),
+                    ft.Text(
+                        "Aplikasi ini terhubung langsung dengan repository GitHub (monkdluffy/Me2D). Saat pembaruan baru dirilis, aplikasi akan otomatis memunculkan notifikasi pembaruan.",
+                        size=12,
+                        color=ft.Colors.GREY_700
+                    ),
+                    ft.Row([
+                        ft.ElevatedButton(
+                            "Periksa Pembaruan Sekarang",
+                            icon=ft.Icons.REFRESH,
+                            style=ft.ButtonStyle(bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE),
+                            on_click=self.on_manual_check_update_clicked
+                        ),
+                        self.txt_update_status
+                    ], spacing=15, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+                ], spacing=10),
+                padding=15
+            )
+        )
+
+        card_guide = ft.Card(
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.Icon(ft.Icons.MENU_BOOK, color=ft.Colors.BLUE_800, size=24),
+                        ft.Text("Panduan Singkat Penggunaan Canido Doc Manager", weight=ft.FontWeight.BOLD, size=15, color=ft.Colors.BLUE_900)
+                    ]),
+                    ft.Text("1. Input Data: Lengkapi data perusahaan, personil, logbook, dan rekan bisnis pada tab 'Input Data'."),
+                    ft.Text("2. Batch Find & Replace: Tentukan kata/kalimat khusus yang ingin dicari dan diganti pada form di Data Badan Usaha."),
+                    ft.Text("3. Process Documents: Pilih folder atau file template Word (.docx), lalu klik tombol 'Start Batch Replacement' untuk memproses Word atau PDF secara otomatis."),
+                    ft.Text("4. PDF Toolkit: Gunakan menu konversi, watermark, merge, dan split PDF bila diperlukan."),
+                    ft.Text("5. Image Toolkit: Gunakan AI Background Removal untuk menghapus background stempel atau tanda tangan menjadi transparan 300 DPI.")
+                ], spacing=8),
+                padding=15
+            )
+        )
+
+        card_about = ft.Card(
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.Icon(ft.Icons.INFO_OUTLINE, color=ft.Colors.BLUE_800, size=24),
+                        ft.Text("Tentang Aplikasi & Lisensi", weight=ft.FontWeight.BOLD, size=15, color=ft.Colors.BLUE_900)
+                    ]),
+                    ft.Text(f"{APP_NAME} v{APP_VERSION} © 2026 Canido Sertifikasi.", weight=ft.FontWeight.BOLD),
+                    ft.Text("Dibuat untuk otomatisasi dokumen SMAP, audit, dan penerbitan dokumen sertifikasi."),
+                    ft.Text("Official Repository: https://github.com/monkdluffy/Me2D", italic=True, color=ft.Colors.BLUE_800)
+                ], spacing=6),
+                padding=15
+            )
+        )
+
+        return ft.Column([
+            ft.Text("Pusat Bantuan & Pembaruan Sistem (Help Center)", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_900),
+            card_help_updater,
+            card_guide,
+            card_about
+        ], spacing=15, scroll=ft.ScrollMode.ADAPTIVE)
+
+    def _check_update_on_startup(self):
+        import time
+        time.sleep(2)
+        try:
+            update_info = check_for_updates(APP_VERSION)
+            if update_info:
+                self.show_update_dialog(update_info, is_manual=False)
+        except Exception as ex:
+            logger.debug(f"Startup update check: {ex}")
+
+    def on_manual_check_update_clicked(self, e):
+        self.txt_update_status.value = "Sedang memeriksa pembaruan di GitHub..."
+        self.btn_check_update.disabled = True
+        self.page.update()
+
+        def run_check():
+            try:
+                update_info = check_for_updates(APP_VERSION)
+                self.btn_check_update.disabled = False
+                if update_info:
+                    self.txt_update_status.value = f"Pembaruan tersedia: {update_info['tag_name']}"
+                    self.page.update()
+                    self.show_update_dialog(update_info, is_manual=True)
+                else:
+                    self.txt_update_status.value = f"Aplikasi sudah menggunakan versi terbaru (v{APP_VERSION})."
+                    self.show_snackbar(f"Aplikasi Canido Doc Manager sudah versi terbaru (v{APP_VERSION}).", color="green")
+                    self.page.update()
+            except Exception as ex:
+                self.btn_check_update.disabled = False
+                self.txt_update_status.value = "Tidak dapat memeriksa pembaruan (offline / koneksi terputus)."
+                self.page.update()
+
+        threading.Thread(target=run_check, daemon=True).start()
+
+    def show_update_dialog(self, update_info: dict, is_manual: bool = False):
+        new_tag = update_info.get("tag_name", "Versi Baru")
+        release_name = update_info.get("name") or new_tag
+        body_notes = update_info.get("body") or "Pembaruan fitur & perbaikan bug."
+        asset_name = update_info.get("asset_name") or "File Pembaruan"
+        asset_size = update_info.get("asset_size", 0)
+        size_str = f" (~{asset_size / (1024*1024):.1f} MB)" if asset_size > 0 else ""
+        is_direct = update_info.get("is_direct_download", False)
+
+        prog_bar = ft.ProgressBar(value=0.0, visible=False)
+        lbl_status = ft.Text("Klik 'Perbarui Sekarang' untuk mengunduh dan memasang pembaruan.", size=12, color=ft.Colors.GREY_700)
+
+        btn_close = ft.OutlinedButton("Nanti Saja")
+        btn_action = ft.ElevatedButton(
+            "Perbarui Sekarang" if is_direct else "Buka Halaman Download ➔",
+            icon=ft.Icons.DOWNLOAD if is_direct else ft.Icons.OPEN_IN_NEW,
+            style=ft.ButtonStyle(bgcolor=ft.Colors.GREEN_700, color=ft.Colors.WHITE)
+        )
+
+        def close_dlg(ev=None):
+            dlg.open = False
+            try:
+                self.page.close(dlg)
+            except Exception:
+                pass
+            self.page.update()
+
+        btn_close.on_click = close_dlg
+
+        def do_update(ev):
+            if not is_direct:
+                close_dlg()
+                try:
+                    self.page.launch_url(update_info.get("html_url", ""))
+                except Exception:
+                    pass
+                return
+
+            btn_action.disabled = True
+            btn_close.disabled = True
+            prog_bar.visible = True
+            lbl_status.value = f"Mengunduh {asset_name}... 0%"
+            self.page.update()
+
+            def run_dl():
+                import tempfile
+                dest_dir = tempfile.gettempdir()
+                dest_path = os.path.join(dest_dir, asset_name)
+
+                def on_progress(fraction, downloaded, total):
+                    pct = int(fraction * 100)
+                    prog_bar.value = fraction
+                    lbl_status.value = f"Mengunduh {asset_name}... {pct}% ({downloaded // (1024*1024)}/{total // (1024*1024)} MB)"
+                    self.page.update()
+
+                ok = download_update_file(update_info.get("download_url", ""), dest_path, progress_callback=on_progress)
+                if ok and os.path.exists(dest_path):
+                    lbl_status.value = "Unduhan selesai! Menjalankan installer..."
+                    self.page.update()
+                    import time
+                    time.sleep(1)
+                    close_dlg()
+                    launch_installer_and_exit(dest_path)
+                else:
+                    btn_action.disabled = False
+                    btn_close.disabled = False
+                    prog_bar.visible = False
+                    lbl_status.value = "Gagal mengunduh otomatis. Silakan buka halaman web rilis."
+                    self.page.update()
+
+            threading.Thread(target=run_dl, daemon=True).start()
+
+        btn_action.on_click = do_update
+
+        dlg = ft.AlertDialog(
+            title=ft.Row([
+                ft.Icon(ft.Icons.SYSTEM_UPDATE_ALT, color=ft.Colors.GREEN_700, size=28),
+                ft.Text(f"Pembaruan Tersedia: {release_name}", weight=ft.FontWeight.BOLD, size=16, color=ft.Colors.BLUE_900),
+            ]),
+            content=ft.Container(
+                width=500,
+                content=ft.Column([
+                    ft.Row([
+                        ft.Container(
+                            content=ft.Text(f"Versi Anda: v{APP_VERSION}", size=12, weight=ft.FontWeight.BOLD, color=ft.Colors.GREY_800),
+                            padding=ft.padding.symmetric(horizontal=10, vertical=5),
+                            bgcolor=ft.Colors.GREY_200,
+                            border_radius=5
+                        ),
+                        ft.Icon(ft.Icons.ARROW_FORWARD, size=16, color=ft.Colors.BLUE_700),
+                        ft.Container(
+                            content=ft.Text(f"Versi Baru: {new_tag}", size=12, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+                            padding=ft.padding.symmetric(horizontal=10, vertical=5),
+                            bgcolor=ft.Colors.GREEN_700,
+                            border_radius=5
+                        ),
+                    ], spacing=10),
+                    ft.Text("Catatan Pembaruan (Release Notes):", weight=ft.FontWeight.BOLD, size=13),
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Text(body_notes, size=12, color=ft.Colors.GREY_800),
+                        ], scroll=ft.ScrollMode.ADAPTIVE),
+                        max_height=140,
+                        padding=10,
+                        bgcolor=ft.Colors.BLUE_50,
+                        border_radius=5,
+                        border=ft.Border.all(1, ft.Colors.BLUE_100)
+                    ),
+                    ft.Text(f"Target Installer: {asset_name}{size_str}", size=12, italic=True, color=ft.Colors.GREY_700),
+                    prog_bar,
+                    lbl_status
+                ], spacing=10),
+            ),
+            actions=[
+                btn_close,
+                btn_action
+            ]
+        )
+
+        self.page.overlay.append(dlg)
+        dlg.open = True
+        self.page.update()
         
     def on_removebg_api_key_changed(self, e):
         self.removebg_api_key = self.txt_settings_removebg_key.value

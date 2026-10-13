@@ -292,5 +292,63 @@ class TestSMAPAutoDocEngine(unittest.TestCase):
         self.assertNotIn("Jasa Konstruksi dengan", full_text)
         self.assertNotIn("Bapak Budi", full_text)
 
+    def test_auto_updater_engine(self):
+        from core.updater import parse_version_tuple, is_newer_version, check_for_updates
+        from unittest.mock import patch, MagicMock
+        import io
+        import json
+
+        # 1. Version parsing
+        self.assertEqual(parse_version_tuple("v1.0.0"), (1, 0, 0))
+        self.assertEqual(parse_version_tuple("1.2.3"), (1, 2, 3))
+        self.assertEqual(parse_version_tuple("v2.10.15"), (2, 10, 15))
+
+        # 2. Version comparison
+        self.assertTrue(is_newer_version("v1.1.0", "1.0.0"))
+        self.assertTrue(is_newer_version("2.0.0", "1.9.9"))
+        self.assertFalse(is_newer_version("v1.0.0", "1.0.0"))
+        self.assertFalse(is_newer_version("v0.9.0", "1.0.0"))
+
+        # 3. Simulated GitHub API response with newer release
+        mock_payload = {
+            "tag_name": "v1.1.0",
+            "name": "Canido Doc Manager v1.1.0",
+            "body": "Pembaruan fitur baru dan perbaikan stabilitas.",
+            "html_url": "https://github.com/monkdluffy/Me2D/releases/tag/v1.1.0",
+            "assets": [
+                {
+                    "name": "Canido_Doc_Manager_Setup.exe",
+                    "browser_download_url": "https://github.com/monkdluffy/Me2D/releases/download/v1.1.0/Canido_Doc_Manager_Setup.exe",
+                    "size": 52428800
+                }
+            ]
+        }
+
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.read.return_value = json.dumps(mock_payload).encode("utf-8")
+        mock_resp.__enter__.return_value = mock_resp
+
+        with patch("urllib.request.urlopen", return_value=mock_resp):
+            info = check_for_updates(current_version="1.0.0")
+            self.assertIsNotNone(info)
+            self.assertEqual(info["tag_name"], "v1.1.0")
+            self.assertTrue(info["is_direct_download"])
+            self.assertIn("Setup.exe", info["asset_name"])
+
+            # Test when current version is already up to date
+            no_update = check_for_updates(current_version="1.1.0")
+            self.assertIsNone(no_update)
+
+        # 4. Verify UI controls integration in SMAPAutoDocApp
+        from app import SMAPAutoDocApp
+        page = MagicMock()
+        app = SMAPAutoDocApp(page)
+        self.assertTrue(hasattr(app, "txt_update_status"))
+        self.assertTrue(hasattr(app, "btn_check_update"))
+        self.assertTrue(hasattr(app, "on_manual_check_update_clicked"))
+        self.assertTrue(hasattr(app, "show_update_dialog"))
+
+
 if __name__ == "__main__":
     unittest.main()
