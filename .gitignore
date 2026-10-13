@@ -1,0 +1,53 @@
+# Python Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build Artifacts
+build/
+dist/
+dist_installer/
+*.spec.bak
+
+# Local Database & User State
+app_history.db
+user_settings.json
+*.log
+test_log.txt
+test_out*.txt
+
+# Generated Output Documents
+output_documents/
+test_rows_out.docx
+test_split.docx
+test_space.docx
+test_rows.docx
+test.pdf
+test_wm.pdf
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Temporary scratch files
+scratch_*.py
+tampung perintah.txt
+test_app*.py
+test_flet*
+test_meipass*
+test_open*
+test_tree*
+fix_app.py
+apply_fix.py
+patch_flet_api.py
+replace_tabs.py
+update_config.py

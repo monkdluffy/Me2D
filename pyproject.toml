@@ -1,0 +1,11 @@
+[project]
+name = "SMAP_AutoDoc_Studio"
+version = "1.0.0"
+description = "Canido Doc Manager"
+
+[tool.flet.app]
+id = "com.canido.docmanager"
+name = "Canido Doc Manager"
+
+[tool.flet.build]
+module-name = "main"

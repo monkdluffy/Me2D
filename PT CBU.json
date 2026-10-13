@@ -1,0 +1,128 @@
+{
+    "variables": {
+        "inisial_bu": "PT CBU",
+        "bu_caps": "PT CANIDO BERKAH UTAMA",
+        "bu": "PT Canido Berkah Utama",
+        "alamat_bu": "Perum. Tj Bunga Anggrek C63. Bukit Intan Pangkalpinang",
+        "provinsi": "Kep. Bangka Belitung",
+        "kab_kota": "Pangkal Pinang",
+        "kode_pos": "33147",
+        "website": "https://www.canidoberkahutama.com",
+        "email_bu": "ptcbuk24pkp@gmail.com",
+        "telepon_bu": "081271782742",
+        "jenis_usaha_bu": "Konsultansi Konstruksi",
+        "akta_pendirian": "18",
+        "tgl_akta_pendirian": "29 Desember 2023",
+        "akta_perubahan_akhir": "-",
+        "tgl_akta_perubahan_akhir": "-",
+        "npwp_bu": "04.623.434.0-304.000",
+        "tgl_npwp_bu": "-",
+        "nib_bu": "0602240106885",
+        "tgl_nib_bu": "6 Februari 2024",
+        "no_kumham": "AHU-0000189.AH.01.01 TAHUN 2024",
+        "serti_standar_1": "-",
+        "serti_standar_2": "-",
+        "serti_standar_3": "-",
+        "sbu_umku_1": "100222006470800150001 ( RK 001)",
+        "tgl_sbu_umku_1": "2023-05-04",
+        "sbu_umku_2": "100222006470800150001 ( RK 002)",
+        "tgl_sbu_umku_2": "2023-05-04",
+        "sbu_umku_3": "100222006470800150001 ( RK 003)",
+        "tgl_sbu_umku_3": "2023-05-04",
+        "sbu_umku_4": "100222006470800150001 ( RK 005)",
+        "tgl_sbu_umku_4": "2023-05-04",
+        "tgl_berlaku": "04 Mei 2024",
+        "tgl_berlaku_pendek": "04-05-24",
+        "tgl_sekarang": "18 Juni 2026",
+        "kbli": "41011, 70209",
+        "bu_folder": "PTCANIDOBERKAHUTAMA",
+        "direktur": "Bambang Sudirjo, S.E., M.M.",
+        "fkap": "Ir. Hendra Wijaya, M.T., CACP",
+        "manager": "Siti Rahmawati, S.T.",
+        "administrasi": "Dewi Lestari, A.Md.",
+        "keuangan": "Rudi Hermawan, S.E., Ak.",
+        "ins_fkap": "HW",
+        "ins_mgr": "SR",
+        "ins_adm": "DL",
+        "ins_keu": "RH",
+        "tgl_logbook": "10 Mei 2025",
+        "tgl_lapor_suap": "12 Mei 2025",
+        "tgl_analisa_pelaporan": "14 Mei 2025",
+        "no_surat_penunjukan": "020/AI-PT.CBU/V/2025",
+        "tgl_surat_penunjukan": "15 Mei 2025",
+        "th_program_audit_th4": "2026",
+        "tgl_program_audit_th4": "16 Mei 2025",
+        "tgl_jadwal_rencana_audit": "17 Mei 2025",
+        "no_undangan_audit": "UND-AUD/012/FKAP/V/2025",
+        "tgl1_undangan_audit": "18 Mei 2025",
+        "tgl2_undangan_audit": "19 Mei 2025",
+        "hari_undangan_audit": "Senin",
+        "tgl_uji_layak_personil": "05 Juni 2025",
+        "tgl_uji_layak_rekan": "10 Juni 2025",
+        "tgl_daftar_periksa": "08 Mei 2025",
+        "tgl_daftar_periksa1": "09 Mei 2025",
+        "tgl_daftar_periksa2": "10 Mei 2025",
+        "no_lap_tidak_sesuai": "LAP-TS/001/2025",
+        "tgl_selesai1": "11 Mei 2025",
+        "tgl_selesai2": "12 Mei 2025",
+        "no_ba_pemusnahan": "BA-DEL/003/SMAP/2025",
+        "tgl_ba_pemusnahan": "13 Mei 2025",
+        "no_terima_distribusi": "DIST/004/2025",
+        "tgl_terima_distribusi": "14 Mei 2025",
+        "haritgl_terbilang_ba_pemusnahan": "Kamis, Tiga Belas Mei Tahun Dua Ribu Dua Puluh Lima",
+        "nama_rekan": "Ir. Edi Dwi Purwanto, ST., MM",
+        "bu_dinas_rekan": "PT Mitra Konstruksi Utama (Subkon)",
+        "alamat_rekan": "Jl. Gatot Subroto No. 88, Bandung",
+        "hub_rekan": "Subkontraktor Pekerjaan Sipil",
+        "nik_nip": "3273012345670001",
+        "jabatan_rekan": "Direktur Utama",
+        "tlp_rekan": "0813-9876-5432"
+    },
+    "images": {
+        "logo_bu": {
+            "path": "",
+            "width_mm": 40,
+            "height_mm": 20
+        },
+        "stempel_bu": {
+            "path": "",
+            "width_mm": 35,
+            "height_mm": 35
+        },
+        "ttd_direktur": {
+            "path": "",
+            "width_mm": 40,
+            "height_mm": 25
+        },
+        "ttd_fkap": {
+            "path": "",
+            "width_mm": 40,
+            "height_mm": 25
+        },
+        "ttd_manager": {
+            "path": "",
+            "width_mm": 35,
+            "height_mm": 20
+        },
+        "ttd_adm": {
+            "path": "",
+            "width_mm": 35,
+            "height_mm": 20
+        },
+        "ttd_keu": {
+            "path": "",
+            "width_mm": 35,
+            "height_mm": 20
+        },
+        "logo_rekan": {
+            "path": "",
+            "width_mm": 40,
+            "height_mm": 20
+        },
+        "ttd_rekan": {
+            "path": "",
+            "width_mm": 40,
+            "height_mm": 25
+        }
+    }
+}

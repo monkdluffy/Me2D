@@ -1,0 +1,131 @@
+# Implementation Plan - SMAP Advanced Document Templating & PDF Publishing Suite
+
+Build a standalone, high-performance, cross-platform (Windows & macOS) desktop application using Python and **Flet** (Flutter-backed engine) to replace legacy MS Word VBA macros with an advanced batch templating, 78-variable canonical injection, dynamic image asset handling, and automated PDF conversion/post-processing engine.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Key Architecture Decisions for Review**:
+> 1. **Cross-Platform PDF Conversion Engine**:
+>    - Primary converter: **LibreOffice Headless** (`soffice --headless --convert-to pdf`). Autodetect installation on macOS (`/Applications/LibreOffice.app/Contents/MacOS/soffice`) and Windows (`C:\Program Files\LibreOffice\program\soffice.exe` or `C:\Program Files (x86)\...`).
+>    - Windows Fallback: Native **MS Word COM Automation** (`win32com.client`) if LibreOffice is not installed but Microsoft Word is available.
+> 2. **78 Canonical SMAP Variables Input Matrix**:
+>    - Categorized into 4 expandable, styled accordion/tab sections: Data Badan Usaha, Personil/Staf SMAP, Logbook & Audit Dates, and Rekan Bisnis.
+> 3. **Image Asset Management**:
+>    - Supports dynamic image upload for Logo (`{{logo_bu}}`), Stamp (`{{stempel_bu}}`), and Signatures (`{{ttd_direktur}}`, `{{ttd_fkap}}`, `{{ttd_rekan}}`, `{{stempel_rekan}}`, etc.) with customizable millimeter-based dimensions (`InlineImage`).
+> 4. **Batch Concurrency**:
+>    - Multi-threaded processing via `concurrent.futures.ThreadPoolExecutor` ensuring responsive Flet GUI with live progress bar and status console logging.
+
+---
+
+## Open Questions
+
+- None at present; all canonical 78 variables, image tags, LibreOffice/Word PDF fallbacks, PyMuPDF watermarking/stamping, Excel multi-row import/export, and packaging targets have been specified.
+
+---
+
+## Proposed Changes
+
+### Configuration & Data Presets
+
+#### [NEW] [config.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/config.py)
+- Define canonical lists of all **78 SMAP variables** grouped into categories.
+- Define default image slot keys (`logo_bu`, `stempel_bu`, `ttd_direktur`, `ttd_fkap`, `ttd_manager`, `ttd_adm`, `ttd_keu`, `ttd_rekan`, `stempel_rekan`).
+- Define default image dimensions (e.g., width 40mm, height 25mm).
+- Define default LibreOffice search paths for Windows and macOS.
+- App metadata (name: **SMAP AutoDoc Studio**, version: `1.0.0`, theme colors).
+
+---
+
+### Core Document & PDF Engine Modules
+
+#### [NEW] [core/__init__.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/core/__init__.py)
+- Expose core engine interfaces.
+
+#### [NEW] [core/doc_engine.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/core/doc_engine.py)
+- Primary engine built on `docxtpl` (`DocxTemplate`), `python-docx`, and `Jinja2`.
+- `process_document(template_path, output_path, context, image_map)`:
+  - Parses Jinja placeholders across Body, Headers, Footers, and Tables.
+  - Dynamically converts uploaded image file paths into `docxtpl.InlineImage` objects with specified millimeter width/height.
+  - Sanitizes legacy raw `{variable_name}` and `${variable_name}` tags using paragraph/run XML traversal to resolve MS Word split-run XML issues.
+  - Returns metadata on replacements applied and handles errors cleanly.
+
+#### [NEW] [core/pdf_engine.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/core/pdf_engine.py)
+- `convert_docx_to_pdf(docx_path, output_pdf_path, libreoffice_path=None)`:
+  - Autodetects LibreOffice executable across Windows (`C:\Program Files\LibreOffice\program\soffice.exe`) and macOS (`/Applications/LibreOffice.app/Contents/MacOS/soffice`).
+  - Fallback to Windows COM Automation (`win32com.client.Dispatch("Word.Application")`) when running on Windows without LibreOffice.
+- `apply_pdf_watermark(pdf_path, output_pdf_path, watermark_text, opacity, angle, font_size, color_rgb)`:
+  - Uses `fitz` (PyMuPDF) to overlay semi-transparent diagonal watermarks across all pages.
+- `apply_pdf_stamp(pdf_path, output_pdf_path, stamp_img_path, page_num, x, y, width, height)`:
+  - Uses PyMuPDF to place visual stamps/signatures on specific PDF coordinates or quadrant presets.
+- `merge_pdfs(pdf_list, output_pdf_path)`:
+  - Combines main document PDF with attachments/certificates into one unified PDF using `PyMuPDF` or `pypdf`.
+
+#### [NEW] [core/profile_manager.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/core/profile_manager.py)
+- `save_profile_json(data_dict, file_path)` & `load_profile_json(file_path)`:
+  - Serializes and deserializes current 78 variables & image configurations.
+- `export_profile_excel(data_list_or_dict, file_path)` & `import_profile_excel(file_path)`:
+  - Supports single-profile export or multi-row batch data import/export via `pandas` / `openpyxl`.
+- `get_sample_smap_profile()`:
+  - Pre-populates standard SMAP default sample data for instant testing.
+
+#### [NEW] [core/batch_worker.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/core/batch_worker.py)
+- `BatchProcessor`:
+  - Utilizes `ThreadPoolExecutor` for non-blocking concurrent replacement across hundreds of `.docx` templates and data rows.
+  - Supports progress reporting callbacks (`on_progress(current, total, file_name, status)`), logging, and cancellation.
+
+---
+
+### Graphical User Interface (Flet)
+
+#### [NEW] [app.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/app.py)
+- Modern cross-platform desktop UI using **Flet**:
+  1. **Sidebar Navigation Rail**:
+     - `Single Document`: Process single template with live variable form.
+     - `Batch Processing`: Multi-file/folder selection with Excel row matching.
+     - `Profiles & Presets`: JSON/Excel load/save & sample data load.
+     - `PDF Toolkit`: Independent DOCX-to-PDF conversion, watermarking, stamping, and PDF merging.
+     - `Settings`: Path detection, thread count, default dimensions.
+  2. **Data Entry Matrix**:
+     - 78 variables organized into clean tabs / grouped cards with validation & search filter.
+  3. **Image Asset Manager**:
+     - Upload buttons for Logo, Stamp, Signatures with thumbnail previews & dimension inputs.
+  4. **Live Progress Console**:
+     - Progress bar, status indicators, live log text area, and quick output folder launcher.
+
+---
+
+### Assets & Packaging
+
+#### [NEW] [assets/](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/assets/)
+- Include placeholder logo, stamp, and signature images.
+
+#### [NEW] [requirements.txt](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/requirements.txt)
+- Pin required packages (`flet`, `docxtpl`, `python-docx`, `PyMuPDF`, `pypdf`, `pandas`, `openpyxl`, `pillow`, `pywin32`, `pyinstaller`).
+
+#### [NEW] [build.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/build.py)
+- PyInstaller automated packaging script for generating Windows executable (`.exe`) and macOS application bundle (`.app`).
+
+#### [NEW] [test_suite.py](file:///e:/@Medi/@002 Gemini Projects/@0001_canido_doc_manager/test_suite.py)
+- Automated verification script to test docx generation, split-run XML cleaning, PDF conversion, watermarking, stamping, PDF merging, and profile save/load.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Execute `test_suite.py` to verify:
+  1. `doc_engine`: Injection of 78 Jinja variables, header/footer/table substitution, and `InlineImage` rendering.
+  2. Legacy XML split-run cleaner: Verification that raw `{inisial_bu}` tokens spanning multiple XML runs are sanitized and replaced.
+  3. `pdf_engine`: DOCX to PDF conversion (LibreOffice / MS Word COM), PyMuPDF watermarking, image stamp overlay, and PDF merge.
+  4. `profile_manager`: JSON profile save/load roundtrip, Excel batch import/export roundtrip.
+  5. `batch_worker`: Concurrency test with `ThreadPoolExecutor`.
+
+### Manual Verification
+- Launch the Flet UI via `python app.py` (or Python executable).
+- Verify navigation across all 5 sidebar tabs.
+- Load sample profile preset and observe auto-population of the 78 canonical input fields.
+- Upload image assets and generate output DOCX + PDF.
+- Perform batch generation and verify progress bar and console log updating in real-time.

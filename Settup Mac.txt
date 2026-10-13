@@ -1,0 +1,26 @@
+Ran command: `cat mac_build.sh`
+
+Alhamdulillah! Selamat Pak, akhirnya logo Canido Sertifikasi berhasil tampil sempurna dan aplikasinya sudah siap didistribusikan untuk Windows. Semua kerja keras kita membuahkan hasil yang sangat rapi. 🚀
+
+Terkait dengan pertanyaan Bapak sebelumnya untuk membuat **paket instalasi yang bisa dijalankan di Mac (macOS)**, ada satu hal teknis yang perlu diketahui:
+Sistem operasi Windows dan macOS sangat berbeda, sehingga **kita tidak bisa membungkus/meng-compile aplikasi untuk Mac jika kita sedang berada di komputer Windows**. 
+Apple memiliki aturan keamanan di mana aplikasi Mac (`.app` atau `.dmg`) hanya bisa di-*build* melalui perangkat Mac (MacBook atau iMac).
+
+Namun, saya **sudah menyiapkan** *script* instalasi otomatis untuk Mac di dalam folder proyek Bapak, yaitu file `mac_build.sh`! 
+
+Berikut adalah **langkah-langkah untuk membuat aplikasi versi Mac**:
+1. Bapak perlu menggunakan atau meminjam komputer/laptop **MacBook / iMac**.
+2. **Pindahkan (Copy)** seluruh folder proyek `0001_canido_doc_manager` ini ke dalam Mac tersebut (bisa via Flashdisk atau Google Drive).
+3. Di Mac tersebut, buka aplikasi **Terminal**.
+4. Masuk ke folder proyek yang baru di-*copy*, lalu jalankan perintah ini:
+
+   ```
+   sh mac_build.sh
+   ```
+5. Proses akan berjalan otomatis mengunduh Python dan membungkus aplikasinya. Setelah selesai, file aplikasi Mac-nya akan bernama **Canido Doc Manager.app** di dalam folder `dist`.
+
+Berbeda dengan Windows yang menggunakan Inno Setup (`.exe`), di Mac tidak ada sistem *installer wizard*. Pengguna Mac cukup meletakkan aplikasi `.app` di mana saja.
+Jadi untuk mendistribusikan ke teman-teman pengguna Mac, Bapak cukup menaruh **Canido Doc Manager.app**, folder **Master SMAP**, dan file **Excel** ke dalam satu folder biasa,
+lalu di-ZIP menjadi `Canido_Doc_Manager_Mac.zip` dan bagikan ke teman-teman.
+
+Proyek ini sudah selesai dengan luar biasa Pak. Apakah ada hal lain atau detail kecil yang ingin ditambahkan sebelum kita benar-benar tutup buku untuk proyek versi 1.0.0 ini?
